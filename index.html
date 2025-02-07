@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau avec Recherche et Suppression</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 250px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+            outline: none;
+            margin: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .delete-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h2>Tableau</h2>
+    <input type="text" id="search" placeholder="Rechercher..." onkeyup="searchTable()">
+    <input type="text" id="newWord" placeholder="Ajouter un mot">
+    <button onclick="addWord()">Ajouter</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Mots</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="wordTable">
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadWords);
+        
+        function addWord() {
+            let input = document.getElementById("newWord");
+            let word = input.value.trim();
+            if (word) {
+                let table = document.getElementById("wordTable");
+                let row = table.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.textContent = word;
+                let btn = document.createElement("button");
+                btn.textContent = "Supprimer";
+                btn.className = "delete-btn";
+                btn.onclick = function() { deleteWord(row, word); };
+                cell2.appendChild(btn);
+                saveWord(word);
+                input.value = "";
+            }
+        }
+
+        function searchTable() {
+            let filter = document.getElementById("search").value.toLowerCase();
+            let rows = document.querySelectorAll("#wordTable tr");
+            rows.forEach(row => {
+                let text = row.cells[0].textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? "" : "none";
+            });
+        }
+        
+        function saveWord(word) {
+            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
+            words.push(word);
+            localStorage.setItem("wordTable", JSON.stringify(words));
+        }
+        
+        function loadWords() {
+            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
+            let table = document.getElementById("wordTable");
+            words.forEach(word => {
+                let row = table.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                cell1.textContent = word;
+                let btn = document.createElement("button");
+                btn.textContent = "Supprimer";
+                btn.className = "delete-btn";
+                btn.onclick = function() { deleteWord(row, word); };
+                cell2.appendChild(btn);
+            });
+        }
+        
+        function deleteWord(row, word) {
+            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
+            words = words.filter(w => w !== word);
+            localStorage.setItem("wordTable", JSON.stringify(words));
+            row.remove();
+        }
+    </script>
+</body>
+</html>
