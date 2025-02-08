@@ -137,12 +137,27 @@
             }
         }
 
-        function searchTable(tableId, searchId) {
-            let filter = document.getElementById(searchId).value.toLowerCase();
-            let rows = document.querySelectorAll(`#${tableId} tr`);
-            rows.forEach(row => {
-                let text = row.cells[0].textContent.toLowerCase() + " " + row.cells[1].textContent.toLowerCase();
-                row.style.display = text.includes(filter) ? "" : "none";
+        function saveWord(tableId, word1, word2) {
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
+            words.push([word1, word2]);
+            localStorage.setItem(tableId, JSON.stringify(words));
+        }
+
+        function loadWords(tableId) {
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
+            let table = document.getElementById(tableId);
+            words.forEach(([word1, word2]) => {
+                let row = table.insertRow();
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+                cell1.textContent = word1;
+                cell2.textContent = word2;
+                let btn = document.createElement("button");
+                btn.textContent = "Supprimer";
+                btn.className = "delete-btn";
+                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
+                cell3.appendChild(btn);
             });
         }
     </script>
