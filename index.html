@@ -68,7 +68,7 @@
 </head>
 <body>
     <h2>Tableau</h2>
-    <input type="text" id="search" placeholder="Rechercher...">
+    <input type="text" id="search" placeholder="Rechercher..." onkeyup="searchTable('wordTable', 'search')">
     <button onclick="searchTable('wordTable', 'search')">Rechercher</button>
     <br>
     <input type="text" id="newWord1" placeholder="Mot 1">
@@ -88,7 +88,7 @@
     </table>
 
     <h2>Black List</h2>
-    <input type="text" id="searchBlacklist" placeholder="Rechercher...">
+    <input type="text" id="searchBlacklist" placeholder="Rechercher..." onkeyup="searchTable('blacklistTable', 'searchBlacklist')">
     <button onclick="searchTable('blacklistTable', 'searchBlacklist')">Rechercher</button>
     <br>
     <input type="text" id="newBlacklistWord1" placeholder="Mot 1">
@@ -124,34 +124,43 @@
         });
         
         function addWord(tableId, inputId1, inputId2) {
-            let input1 = document.getElementById(inputId1);
-            let input2 = document.getElementById(inputId2);
-            let word1 = input1.value.trim();
-            let word2 = input2.value.trim();
-            if (word1 && word2) {
-                let table = document.getElementById(tableId);
-                let row = table.insertRow();
-                let cell1 = row.insertCell(0);
-                let cell2 = row.insertCell(1);
-                let cell3 = row.insertCell(2);
-                cell1.textContent = word1;
-                cell2.textContent = word2;
-                let btn = document.createElement("button");
-                btn.textContent = "Supprimer";
-                btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
-                cell3.appendChild(btn);
-                saveWord(tableId, word1, word2);
-                input1.value = "";
-                input2.value = "";
-            }
+            let word1 = document.getElementById(inputId1).value.trim();
+            let word2 = document.getElementById(inputId2).value.trim();
+            if (word1 === "" || word2 === "") return;
+            let table = document.getElementById(tableId);
+            let row = table.insertRow();
+            row.innerHTML = `<td>${word1}</td><td>${word2}</td><td><button class='delete-btn' onclick='deleteWord(this, "${tableId}")'>Supprimer</button></td>`;
+            saveWords(tableId);
+            document.getElementById(inputId1).value = "";
+            document.getElementById(inputId2).value = "";
         }
 
-        function deleteWord(row, word1, word2, tableId) {
-            row.remove();
-            let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            words = words.filter(item => !(item[0] === word1 && item[1] === word2));
+        function deleteWord(button, tableId) {
+            let row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            saveWords(tableId);
+        }
+
+        function saveWords(tableId) {
+            let table = document.getElementById(tableId);
+            let rows = table.getElementsByTagName("tr");
+            let words = [];
+            for (let row of rows) {
+                let cells = row.getElementsByTagName("td");
+                if (cells.length > 0) {
+                    words.push({ word1: cells[0].textContent, word2: cells[1].textContent });
+                }
+            }
             localStorage.setItem(tableId, JSON.stringify(words));
+        }
+
+        function loadWords(tableId) {
+            let table = document.getElementById(tableId);
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
+            words.forEach(word => {
+                let row = table.insertRow();
+                row.innerHTML = `<td>${word.word1}</td><td>${word.word2}</td><td><button class='delete-btn' onclick='deleteWord(this, "${tableId}")'>Supprimer</button></td>`;
+            });
         }
     </script>
 </body>
