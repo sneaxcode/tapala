@@ -14,7 +14,7 @@
         }
         input {
             padding: 10px;
-            width: 250px;
+            width: 200px;
             border: 2px solid #4CAF50;
             border-radius: 5px;
             outline: none;
@@ -69,13 +69,16 @@
 <body>
     <h2>Tableau</h2>
     <input type="text" id="search" placeholder="Rechercher..." onkeyup="searchTable('wordTable', 'search')">
-    <input type="text" id="newWord" placeholder="Ajouter un mot">
-    <button onclick="addWord('wordTable', 'newWord')">Ajouter</button>
+    <br>
+    <input type="text" id="newWord1" placeholder="Mot 1">
+    <input type="text" id="newWord2" placeholder="Mot 2">
+    <button onclick="addWord('wordTable', 'newWord1', 'newWord2')">Ajouter</button>
     
     <table>
         <thead>
             <tr>
-                <th>Mots</th>
+                <th>Mot 1</th>
+                <th>Mot 2</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -85,13 +88,16 @@
 
     <h2>Black List</h2>
     <input type="text" id="searchBlacklist" placeholder="Rechercher..." onkeyup="searchTable('blacklistTable', 'searchBlacklist')">
-    <input type="text" id="newBlacklistWord" placeholder="Ajouter un mot">
-    <button onclick="addWord('blacklistTable', 'newBlacklistWord')">Ajouter</button>
+    <br>
+    <input type="text" id="newBlacklistWord1" placeholder="Mot 1">
+    <input type="text" id="newBlacklistWord2" placeholder="Mot 2">
+    <button onclick="addWord('blacklistTable', 'newBlacklistWord1', 'newBlacklistWord2')">Ajouter</button>
     
     <table>
         <thead>
             <tr>
-                <th>Mots</th>
+                <th>Mot 1</th>
+                <th>Mot 2</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -105,22 +111,27 @@
             loadWords("blacklistTable");
         });
         
-        function addWord(tableId, inputId) {
-            let input = document.getElementById(inputId);
-            let word = input.value.trim();
-            if (word) {
+        function addWord(tableId, inputId1, inputId2) {
+            let input1 = document.getElementById(inputId1);
+            let input2 = document.getElementById(inputId2);
+            let word1 = input1.value.trim();
+            let word2 = input2.value.trim();
+            if (word1 && word2) {
                 let table = document.getElementById(tableId);
                 let row = table.insertRow();
                 let cell1 = row.insertCell(0);
                 let cell2 = row.insertCell(1);
-                cell1.textContent = word;
+                let cell3 = row.insertCell(2);
+                cell1.textContent = word1;
+                cell2.textContent = word2;
                 let btn = document.createElement("button");
                 btn.textContent = "Supprimer";
                 btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word, tableId); };
-                cell2.appendChild(btn);
-                saveWord(tableId, word);
-                input.value = "";
+                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
+                cell3.appendChild(btn);
+                saveWord(tableId, word1, word2);
+                input1.value = "";
+                input2.value = "";
             }
         }
 
@@ -128,36 +139,38 @@
             let filter = document.getElementById(searchId).value.toLowerCase();
             let rows = document.querySelectorAll(`#${tableId} tr`);
             rows.forEach(row => {
-                let text = row.cells[0].textContent.toLowerCase();
+                let text = row.cells[0].textContent.toLowerCase() + " " + row.cells[1].textContent.toLowerCase();
                 row.style.display = text.includes(filter) ? "" : "none";
             });
         }
         
-        function saveWord(tableId, word) {
+        function saveWord(tableId, word1, word2) {
             let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            words.push(word);
+            words.push([word1, word2]);
             localStorage.setItem(tableId, JSON.stringify(words));
         }
         
         function loadWords(tableId) {
             let words = JSON.parse(localStorage.getItem(tableId)) || [];
             let table = document.getElementById(tableId);
-            words.forEach(word => {
+            words.forEach(pair => {
                 let row = table.insertRow();
                 let cell1 = row.insertCell(0);
                 let cell2 = row.insertCell(1);
-                cell1.textContent = word;
+                let cell3 = row.insertCell(2);
+                cell1.textContent = pair[0];
+                cell2.textContent = pair[1];
                 let btn = document.createElement("button");
                 btn.textContent = "Supprimer";
                 btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word, tableId); };
-                cell2.appendChild(btn);
+                btn.onclick = function() { deleteWord(row, pair[0], pair[1], tableId); };
+                cell3.appendChild(btn);
             });
         }
         
-        function deleteWord(row, word, tableId) {
+        function deleteWord(row, word1, word2, tableId) {
             let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            words = words.filter(w => w !== word);
+            words = words.filter(pair => pair[0] !== word1 || pair[1] !== word2);
             localStorage.setItem(tableId, JSON.stringify(words));
             row.remove();
         }
