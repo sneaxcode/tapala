@@ -109,59 +109,8 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            loadWords("wordTable");
-            loadWords("blacklistTable");
-            
-            function addWord(tableId, inputId1, inputId2) {
-            let input1 = document.getElementById(inputId1);
-            let input2 = document.getElementById(inputId2);
-            let word1 = input1.value.trim();
-            let word2 = input2.value.trim();
-            if (word1 && word2) {
-                let table = document.getElementById(tableId);
-                let row = table.insertRow();
-                let cell1 = row.insertCell(0);
-                let cell2 = row.insertCell(1);
-                let cell3 = row.insertCell(2);
-                cell1.textContent = word1;
-                cell2.textContent = word2;
-                let btn = document.createElement("button");
-                btn.textContent = "Supprimer";
-                btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
-                cell3.appendChild(btn);
-                saveWord(tableId, word1, word2);
-                input1.value = "";
-                input2.value = "";
-            }
-        }
-
-        function saveWord(tableId, word1, word2) {
-            let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            words.push([word1, word2]);
-            localStorage.setItem(tableId, JSON.stringify(words));
-        }
-
-        function loadWords(tableId) {
-            let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            let table = document.getElementById(tableId);
-            words.forEach(([word1, word2]) => {
-                let row = table.insertRow();
-                let cell1 = row.insertCell(0);
-                let cell2 = row.insertCell(1);
-                let cell3 = row.insertCell(2);
-                cell1.textContent = word1;
-                cell2.textContent = word2;
-                let btn = document.createElement("button");
-                btn.textContent = "Supprimer";
-                btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
-                cell3.appendChild(btn);
-            });
-        }
-            
-            
-            
+            loadWords("wordTable", "wordList");
+            loadWords("blacklistTable", "blacklist");
             document.getElementById("newWord1").addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
                     addWord('wordTable', 'newWord1', 'newWord2');
@@ -173,6 +122,42 @@
                 }
             });
         });
+
+        function loadWords(tableId, storageKey) {
+            const words = JSON.parse(localStorage.getItem(storageKey)) || [];
+            const table = document.getElementById(tableId);
+            table.innerHTML = "";
+            words.forEach((wordPair, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${wordPair[0]}</td>
+                    <td>${wordPair[1]}</td>
+                    <td><button class="delete-btn" onclick="deleteWord(${index}, '${storageKey}')">Supprimer</button></td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function addWord(tableId, inputId1, inputId2) {
+            const word1 = document.getElementById(inputId1).value.trim();
+            const word2 = document.getElementById(inputId2).value.trim();
+
+            if (word1 && word2) {
+                const words = JSON.parse(localStorage.getItem(tableId === 'wordTable' ? 'wordList' : 'blacklist')) || [];
+                words.push([word1, word2]);
+                localStorage.setItem(tableId === 'wordTable' ? 'wordList' : 'blacklist', JSON.stringify(words));
+                loadWords(tableId, tableId === 'wordTable' ? 'wordList' : 'blacklist');
+                document.getElementById(inputId1).value = '';
+                document.getElementById(inputId2).value = '';
+            }
+        }
+
+        function deleteWord(index, storageKey) {
+            const words = JSON.parse(localStorage.getItem(storageKey)) || [];
+            words.splice(index, 1);
+            localStorage.setItem(storageKey, JSON.stringify(words));
+            loadWords(storageKey === 'wordList' ? 'wordTable' : 'blacklistTable', storageKey);
+        }
 
         function searchTable(tableId, searchId) {
             let input = document.getElementById(searchId).value.toLowerCase();
