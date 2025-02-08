@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau avec Recherche et Suppression</title>
+    <title>Tableaux avec Recherche et Suppression</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -68,9 +68,9 @@
 </head>
 <body>
     <h2>Tableau</h2>
-    <input type="text" id="search" placeholder="Rechercher..." onkeyup="searchTable()">
+    <input type="text" id="search" placeholder="Rechercher..." onkeyup="searchTable('wordTable', 'search')">
     <input type="text" id="newWord" placeholder="Ajouter un mot">
-    <button onclick="addWord()">Ajouter</button>
+    <button onclick="addWord('wordTable', 'newWord')">Ajouter</button>
     
     <table>
         <thead>
@@ -83,14 +83,33 @@
         </tbody>
     </table>
 
+    <h2>Black List</h2>
+    <input type="text" id="searchBlacklist" placeholder="Rechercher..." onkeyup="searchTable('blacklistTable', 'searchBlacklist')">
+    <input type="text" id="newBlacklistWord" placeholder="Ajouter un mot">
+    <button onclick="addWord('blacklistTable', 'newBlacklistWord')">Ajouter</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Mots</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="blacklistTable">
+        </tbody>
+    </table>
+
     <script>
-        document.addEventListener("DOMContentLoaded", loadWords);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadWords("wordTable");
+            loadWords("blacklistTable");
+        });
         
-        function addWord() {
-            let input = document.getElementById("newWord");
+        function addWord(tableId, inputId) {
+            let input = document.getElementById(inputId);
             let word = input.value.trim();
             if (word) {
-                let table = document.getElementById("wordTable");
+                let table = document.getElementById(tableId);
                 let row = table.insertRow();
                 let cell1 = row.insertCell(0);
                 let cell2 = row.insertCell(1);
@@ -98,31 +117,31 @@
                 let btn = document.createElement("button");
                 btn.textContent = "Supprimer";
                 btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word); };
+                btn.onclick = function() { deleteWord(row, word, tableId); };
                 cell2.appendChild(btn);
-                saveWord(word);
+                saveWord(tableId, word);
                 input.value = "";
             }
         }
 
-        function searchTable() {
-            let filter = document.getElementById("search").value.toLowerCase();
-            let rows = document.querySelectorAll("#wordTable tr");
+        function searchTable(tableId, searchId) {
+            let filter = document.getElementById(searchId).value.toLowerCase();
+            let rows = document.querySelectorAll(`#${tableId} tr`);
             rows.forEach(row => {
                 let text = row.cells[0].textContent.toLowerCase();
                 row.style.display = text.includes(filter) ? "" : "none";
             });
         }
         
-        function saveWord(word) {
-            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
+        function saveWord(tableId, word) {
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
             words.push(word);
-            localStorage.setItem("wordTable", JSON.stringify(words));
+            localStorage.setItem(tableId, JSON.stringify(words));
         }
         
-        function loadWords() {
-            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
-            let table = document.getElementById("wordTable");
+        function loadWords(tableId) {
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
+            let table = document.getElementById(tableId);
             words.forEach(word => {
                 let row = table.insertRow();
                 let cell1 = row.insertCell(0);
@@ -131,15 +150,15 @@
                 let btn = document.createElement("button");
                 btn.textContent = "Supprimer";
                 btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word); };
+                btn.onclick = function() { deleteWord(row, word, tableId); };
                 cell2.appendChild(btn);
             });
         }
         
-        function deleteWord(row, word) {
-            let words = JSON.parse(localStorage.getItem("wordTable")) || [];
+        function deleteWord(row, word, tableId) {
+            let words = JSON.parse(localStorage.getItem(tableId)) || [];
             words = words.filter(w => w !== word);
-            localStorage.setItem("wordTable", JSON.stringify(words));
+            localStorage.setItem(tableId, JSON.stringify(words));
             row.remove();
         }
     </script>
