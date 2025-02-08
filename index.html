@@ -111,6 +111,16 @@
         document.addEventListener("DOMContentLoaded", () => {
             loadWords("wordTable");
             loadWords("blacklistTable");
+            document.getElementById("newWord1").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    addWord('wordTable', 'newWord1', 'newWord2');
+                }
+            });
+            document.getElementById("newWord2").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    addWord('wordTable', 'newWord1', 'newWord2');
+                }
+            });
         });
         
         function addWord(tableId, inputId1, inputId2) {
@@ -137,28 +147,11 @@
             }
         }
 
-        function saveWord(tableId, word1, word2) {
+        function deleteWord(row, word1, word2, tableId) {
+            row.remove();
             let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            words.push([word1, word2]);
+            words = words.filter(item => !(item[0] === word1 && item[1] === word2));
             localStorage.setItem(tableId, JSON.stringify(words));
-        }
-
-        function loadWords(tableId) {
-            let words = JSON.parse(localStorage.getItem(tableId)) || [];
-            let table = document.getElementById(tableId);
-            words.forEach(([word1, word2]) => {
-                let row = table.insertRow();
-                let cell1 = row.insertCell(0);
-                let cell2 = row.insertCell(1);
-                let cell3 = row.insertCell(2);
-                cell1.textContent = word1;
-                cell2.textContent = word2;
-                let btn = document.createElement("button");
-                btn.textContent = "Supprimer";
-                btn.className = "delete-btn";
-                btn.onclick = function() { deleteWord(row, word1, word2, tableId); };
-                cell3.appendChild(btn);
-            });
         }
     </script>
 </body>
